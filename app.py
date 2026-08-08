@@ -50,13 +50,23 @@ def create_question():
             return redirect(url_for('create_question'))
 
         try:
-            visible_at = datetime.strptime(visible_at_str, '%Y-%m-%dT%H:%M')
-            hide_at = datetime.strptime(hide_at_str, '%Y-%m-%dT%H:%M')
+            # 1. Parse raw string from browser input
+            visible_at_local = datetime.strptime(visible_at_str, '%Y-%m-%dT%H:%M')
+            hide_at_local = datetime.strptime(hide_at_str, '%Y-%m-%dT%H:%M')
+
+            # 2. Convert user's local time to UTC time
+            # Calculate local vs UTC offset
+            utc_offset = datetime.utcnow() - datetime.now()
+            
+            # Apply offset so DB stores actual UTC values
+            visible_at = visible_at_local + utc_offset
+            hide_at = hide_at_local + utc_offset
+
         except ValueError:
             flash("Invalid date/time format provided.")
             return redirect(url_for('create_question'))
 
-        # 1. Create Base Question
+        # 3. Create Base Question with UTC timestamps
         question = Question(
             uploader_name=uploader_name,
             question_text=question_text,
@@ -69,7 +79,7 @@ def create_question():
         db.session.add(question)
         db.session.flush()  # Generate question.id before commit
 
-        # 2. Process Options if question type is MCQ
+        # 4. Process Options if question type is MCQ
         if question_type == 'mcq':
             options_list = request.form.getlist('options')
             correct_index_raw = request.form.get('correct_option')
