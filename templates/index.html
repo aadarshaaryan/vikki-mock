@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Active Questions - QuizHub{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h3 class="mb-4">🔥 Active Questions</h3>
+
+        {% for question in questions %}
+        <div class="card mb-4 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <span class="badge badge-subject text-white">{{ question.subject }}</span>
+                    <span class="badge badge-unit text-white">Unit: {{ question.unit }}</span>
+                </div>
+                <small class="text-muted">Posted by: <strong>{{ question.uploader_name }}</strong></small>
+            </div>
+
+            <h5 class="fw-bold my-2">{{ question.question_text }}</h5>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                <span class="text-muted small">
+                    🕒 Closes at: {{ question.hide_at.strftime('%b %d, %H:%M') }}
+                </span>
+                <a href="{{ url_for('view_question', question_id=question.id) }}"
+                    class="btn btn-sm btn-outline-primary">
+                    View & Answer ({{ question.answers|length }})
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 card">
+            <h4>No active questions available right now ⏳</h4>
+            <p class="text-muted">Check back later or upload your own question!</p>
+            <div>
+                <a href="{{ url_for('create_question') }}" class="btn btn-primary mt-2">Upload Question</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

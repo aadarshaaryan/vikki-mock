@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload MCQ - QuizHub{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card p-4">
+            <h3 class="mb-3">➕ Post a New MCQ</h3>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Your Name</label>
+                    <input type="text" name="uploader_name" class="form-control" placeholder="e.g. Alex Smith" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Subject</label>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Physics" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Unit / Chapter</label>
+                        <input type="text" name="unit" class="form-control" placeholder="e.g. Thermodynamics" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Question</label>
+                    <textarea name="question_text" class="form-control" rows="3"
+                        placeholder="Type your MCQ question here..." required></textarea>
+                </div>
+
+                <hr>
+
+                <label class="form-label fw-bold">Options (Select radio button for Correct Choice)</label>
+                {% for i in range(4) %}
+                <div class="input-group mb-2">
+                    <div class="input-group-text">
+                        <input class="form-check-input mt-0" type="radio" name="correct_option" value="{{ i }}"
+                            {{ 'checked' if i==0 }} required>
+                    </div>
+                    <input type="text" name="options" class="form-control" placeholder="Option {{ i + 1 }}" required>
+                </div>
+                {% endfor %}
+
+                <hr>
+
+                <h5 class="fw-bold mb-3">📅 Visibility Schedule</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Visible From</label>
+                        <input type="datetime-local" name="visible_at" class="form-control" id="visible_at" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Hide At</label>
+                        <input type="datetime-local" name="hide_at" class="form-control" id="hide_at" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-2">Publish Question</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pre-fill "Visible From" with local current time and "Hide At" with 1 hour later
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('visible_at').value = now.toISOString().slice(0, 16);
+
+    const later = new Date(now.getTime() + 60 * 60 * 1000);
+    document.getElementById('hide_at').value = later.toISOString().slice(0, 16);
+</script>
+{% endblock %}

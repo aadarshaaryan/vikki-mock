@@ -1,0 +1,36 @@
+# Environment Variables & Secrets (CRITICAL: Never commit your Supabase keys)
+.env
+.env.*
+!.env.example
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Database Files (Local SQLite fallback/cache)
+*.db
+*.sqlite3
+instance/
+
+# Flask / Testing / Coverage Outputs
+.webassets-cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE / Code Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo

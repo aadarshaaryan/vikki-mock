@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Question - QuizHub{% endblock %}
+
+{% block content %}
+<style>
+    /* Global & Wrapper Adjustments */
+    .question-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+
+    .responsive-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        padding: 24px;
+        margin-bottom: 24px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Question Header Bar */
+    .card-meta-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+    }
+
+    .meta-badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .meta-uploader {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+    .question-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 16px 0;
+        line-height: 1.5;
+    }
+
+    /* Form Option Label Adjustments */
+    .option-label {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        word-break: break-word;
+    }
+
+    .option-label:hover {
+        background-color: #f9fafb;
+    }
+
+    .option-radio {
+        flex-shrink: 0;
+    }
+
+    /* Response List Item Styling */
+    .response-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        border-radius: 8px;
+    }
+
+    .response-content {
+        flex: 1;
+        min-width: 0;
+        /* Prevents text overflow */
+    }
+
+    .response-badge {
+        flex-shrink: 0;
+    }
+
+    /* Mobile Responsiveness Rules (< 576px) */
+    @media (max-width: 576px) {
+        .responsive-card {
+            padding: 16px;
+        }
+
+        .card-meta-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .meta-uploader {
+            font-size: 0.825rem;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+        }
+
+        .response-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .response-badge {
+            align-self: flex-start;
+        }
+
+        .btn-submit-mobile {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 question-container">
+
+        <!-- Question Box -->
+        <div class="responsive-card">
+            <div class="card-meta-bar">
+                <div class="meta-badges">
+                    <span class="badge badge-subject text-white">{{ question.subject }}</span>
+                    <span class="badge badge-unit text-white">Unit: {{ question.unit }}</span>
+                </div>
+                <div class="meta-uploader">
+                    Uploaded by: <strong>{{ question.uploader_name }}</strong>
+                </div>
+            </div>
+
+            <h4 class="question-title">{{ question.question_text }}</h4>
+
+            <!-- Answer Submission Form -->
+            <form method="POST" class="mt-3">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Your Name</label>
+                    <input type="text" name="user_name" class="form-control" placeholder="Enter your name" required>
+                </div>
+
+                <label class="form-label fw-bold">Select Answer</label>
+                <div class="list-group mb-3">
+                    {% for opt in question.options %}
+                    <label class="list-group-item option-label">
+                        <input class="form-check-input option-radio me-3" type="radio" name="selected_option"
+                            value="{{ opt.id }}" required>
+                        <span>{{ opt.option_text }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-success btn-submit-mobile w-100 fw-bold">Submit Answer</button>
+            </form>
+        </div>
+
+        <!-- Answers Log Section -->
+        <div class="responsive-card">
+            <h5 class="fw-bold mb-3">💬 Responses & Submissions ({{ question.answers|length }})</h5>
+
+            <div class="list-group">
+                {% for ans in question.answers|reverse %}
+                <div class="list-group-item response-item">
+                    <div class="response-content">
+                        <strong>{{ ans.user_name }}</strong> selected:
+                        <span class="text-secondary fw-semibold">"{{ ans.selected_option.option_text }}"</span>
+                        <div class="text-muted small mt-1">
+                            {{ ans.submitted_at.strftime('%b %d, %H:%M') }}
+                        </div>
+                    </div>
+                    <div class="response-badge">
+                        {% if ans.is_correct %}
+                        <span class="badge bg-success p-2">✅ Correct</span>
+                        {% else %}
+                        <span class="badge bg-danger p-2">❌ Incorrect</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-3">
+                    No responses submitted yet. Be the first to answer!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
