@@ -147,7 +147,7 @@ def view_question(question_id):
                 question_id=question.id,
                 user_name=user_name,
                 answer_text=answer_text,
-                is_correct=None  # Requires manual review
+                is_correct=None
             )
 
         db.session.add(answer)
@@ -156,8 +156,16 @@ def view_question(question_id):
         flash("Your answer has been submitted! ✅")
         return redirect(url_for('view_question', question_id=question.id))
 
-    return render_template('view_question.html', question=question)
+    # Calculate total answers to check threshold
+    total_answers = len(question.answers)
+    reveal_results = total_answers >= 3
 
+    return render_template(
+        'view_question.html', 
+        question=question, 
+        reveal_results=reveal_results,
+        remaining_needed=max(0, 3 - total_answers)
+    )
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

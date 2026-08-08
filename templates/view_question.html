@@ -52,7 +52,6 @@
         line-height: 1.5;
     }
 
-    /* Styled Code Editor Input */
     .code-input {
         font-family: 'Courier New', Courier, monospace;
         background-color: #1e293b;
@@ -61,11 +60,6 @@
         padding: 12px;
     }
 
-    .code-input::placeholder {
-        color: #94a3b8;
-    }
-
-    /* Form Option Label */
     .option-label {
         display: flex;
         align-items: center;
@@ -75,7 +69,6 @@
         transition: background-color 0.2s ease;
     }
 
-    /* Displayed Code Snippets in Submissions */
     .code-block-display {
         background-color: #0f172a;
         color: #38bdf8;
@@ -91,7 +84,6 @@
         white-space: pre-wrap;
     }
 
-    /* Response List Item */
     .response-item {
         display: flex;
         justify-content: space-between;
@@ -104,6 +96,17 @@
     .response-content {
         flex: 1;
         min-width: 0;
+    }
+
+    /* Threshold Banner Styling */
+    .threshold-banner {
+        background-color: #fffbebfb;
+        border: 1px solid #fef3c7;
+        color: #b45309;
+        font-size: 0.875rem;
+        padding: 10px 14px;
+        border-radius: 8px;
+        margin-bottom: 16px;
     }
 
     @media (max-width: 576px) {
@@ -149,7 +152,7 @@
                     <input type="text" name="user_name" class="form-control" placeholder="Enter your name" required>
                 </div>
 
-                <!-- 1. MCQ Answer Input -->
+                <!-- MCQ Answer Input -->
                 {% if question.question_type == 'mcq' %}
                     <label class="form-label fw-bold">Select Answer</label>
                     <div class="list-group mb-3">
@@ -161,14 +164,14 @@
                         {% endfor %}
                     </div>
 
-                <!-- 2. Code Answer Input -->
+                <!-- Code Answer Input -->
                 {% elif question.question_type == 'code' %}
                     <div class="mb-3">
                         <label class="form-label fw-bold">Write Your Code</label>
                         <textarea name="answer_text" class="form-control code-input" rows="6" placeholder="// Write your solution code here..." required></textarea>
                     </div>
 
-                <!-- 3. Subjective Answer Input -->
+                <!-- Subjective Answer Input -->
                 {% else %}
                     <div class="mb-3">
                         <label class="form-label fw-bold">Your Answer</label>
@@ -184,23 +187,36 @@
         <div class="responsive-card">
             <h5 class="fw-bold mb-3">💬 Responses & Submissions ({{ question.answers|length }})</h5>
 
+            <!-- Status Threshold Banner -->
+            {% if question.question_type == 'mcq' %}
+                {% if not reveal_results %}
+                <div class="threshold-banner">
+                    🔒 Results hidden: <strong>{{ remaining_needed }} more response(s)</strong> needed before showing correct/incorrect badges!
+                </div>
+                {% else %}
+                <div class="alert alert-success py-2 px-3 small mb-3">
+                    🔓 Minimum responses reached! Results unlocked below.
+                </div>
+                {% endif %}
+            {% endif %}
+
             <div class="list-group">
                 {% for ans in question.answers|reverse %}
                 <div class="list-group-item response-item">
                     <div class="response-content">
                         <strong>{{ ans.user_name }}</strong> submitted:
                         
-                        <!-- Output for MCQ -->
+                        <!-- MCQ Output -->
                         {% if question.question_type == 'mcq' %}
                             <span class="text-secondary fw-semibold">"{{ ans.selected_option.option_text }}"</span>
                         
-                        <!-- Output for Code (Wrapped in <code>) -->
+                        <!-- Code Output -->
                         {% elif question.question_type == 'code' %}
                             <div class="code-block-display">
                                 <pre><code>{{ ans.answer_text }}</code></pre>
                             </div>
 
-                        <!-- Output for Subjective -->
+                        <!-- Subjective Output -->
                         {% else %}
                             <div class="p-2 bg-light rounded mt-2 border">
                                 {{ ans.answer_text }}
@@ -212,8 +228,8 @@
                         </div>
                     </div>
 
-                    <!-- Grading Badge (For MCQ) -->
-                    {% if question.question_type == 'mcq' %}
+                    <!-- Show Grading Badge ONLY if 3 or more people responded -->
+                    {% if question.question_type == 'mcq' and reveal_results %}
                     <div>
                         {% if ans.is_correct %}
                         <span class="badge bg-success p-2">✅ Correct</span>
