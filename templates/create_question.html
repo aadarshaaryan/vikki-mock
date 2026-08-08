@@ -66,28 +66,31 @@
 
 <div class="row justify-content-center">
     <div class="col-12 col-md-10 col-lg-8 form-container">
-        
+
         <div class="form-card">
             <h3 class="fw-bold mb-4">📝 Post New Question</h3>
 
             <form method="POST">
-                
+
                 <!-- Section 1: Uploader Info -->
                 <div class="form-section-title">1. Basic Info</div>
-                
+
                 <div class="mb-3">
                     <label class="form-label fw-bold">Your Name</label>
-                    <input type="text" name="uploader_name" class="form-control" placeholder="e.g. Prof. Sharma" required>
+                    <input type="text" name="uploader_name" class="form-control" placeholder="e.g. Prof. Sharma"
+                        required>
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-sm-6">
                         <label class="form-label fw-bold">Subject</label>
-                        <input type="text" name="subject" class="form-control" placeholder="e.g. Python Programming" required>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Python Programming"
+                            required>
                     </div>
                     <div class="col-12 col-sm-6">
                         <label class="form-label fw-bold">Unit / Topic</label>
-                        <input type="text" name="unit" class="form-control" placeholder="e.g. Unit 3 - Data Structures" required>
+                        <input type="text" name="unit" class="form-control" placeholder="e.g. Unit 3 - Data Structures"
+                            required>
                     </div>
                 </div>
 
@@ -96,7 +99,8 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Question Type</label>
-                    <select name="question_type" id="questionTypeSelect" class="form-select fw-semibold" onchange="toggleQuestionType()">
+                    <select name="question_type" id="questionTypeSelect" class="form-select fw-semibold"
+                        onchange="toggleQuestionType()">
                         <option value="mcq" selected>Multiple Choice (MCQ)</option>
                         <option value="subjective">Subjective (Text Response)</option>
                         <option value="code">Code Submission (Formatted <code> Output)</option>
@@ -169,31 +173,24 @@
         if (typeSelect === 'mcq') {
             mcqSection.style.display = 'block';
             typeHint.innerHTML = "Students will pick 1 correct answer from 4 options.";
-            
-            // Require options input fields when MCQ is active
             optionInputs.forEach(input => input.setAttribute('required', 'required'));
         } else if (typeSelect === 'code') {
             mcqSection.style.display = 'none';
             typeHint.innerHTML = "Students will receive a dark monospaced code editor to write and submit code snippets.";
-            
-            // Remove requirement so form submits smoothly without options
             optionInputs.forEach(input => input.removeAttribute('required'));
         } else {
             mcqSection.style.display = 'none';
             typeHint.innerHTML = "Students will receive a text area to write open-ended subjective answers.";
-            
-            // Remove requirement so form submits smoothly without options
             optionInputs.forEach(input => input.removeAttribute('required'));
         }
     }
 
-    // Set default datetime values on page load (Now -> +7 Days)
+    // Automatically set default datetime values on page load (Now -> +7 Days)
     window.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const nextWeek = new Date();
         nextWeek.setDate(now.getDate() + 7);
 
-        // Format to YYYY-MM-THH:mm
         const formatLocal = (d) => {
             const pad = (n) => n < 10 ? '0' + n : n;
             return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -204,6 +201,23 @@
 
         if (visibleInput && !visibleInput.value) visibleInput.value = formatLocal(now);
         if (hideInput && !hideInput.value) hideInput.value = formatLocal(nextWeek);
+    });
+
+    // Convert local datetime input to standard ISO UTC string before sending to Flask
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const visibleInput = document.querySelector('input[name="visible_at"]');
+        const hideInput = document.querySelector('input[name="hide_at"]');
+
+        if (visibleInput.value) {
+            const vDate = new Date(visibleInput.value);
+            visibleInput.type = 'text'; // temporarily change type to pass raw ISO string
+            visibleInput.value = vDate.toISOString();
+        }
+        if (hideInput.value) {
+            const hDate = new Date(hideInput.value);
+            hideInput.type = 'text';
+            hideInput.value = hDate.toISOString();
+        }
     });
 </script>
 {% endblock %}
