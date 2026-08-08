@@ -12,7 +12,10 @@ class Question(db.Model):
     subject = db.Column(db.String(100), nullable=False)
     unit = db.Column(db.String(100), nullable=False)
     
-    # Foreign key reference to options table for the correct choice
+    # Question type: 'mcq', 'subjective', or 'code'
+    question_type = db.Column(db.String(20), nullable=False, default='mcq')
+
+    # Foreign key reference for MCQ correct choice (nullable for non-MCQ)
     correct_option_id = db.Column(db.Integer, nullable=True)
     
     # Visibility schedule settings
@@ -48,8 +51,15 @@ class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id', ondelete='CASCADE'), nullable=False)
     user_name = db.Column(db.String(100), nullable=False)
-    selected_option_id = db.Column(db.Integer, db.ForeignKey('options.id'), nullable=False)
-    is_correct = db.Column(db.Boolean, nullable=False)
+    
+    # Nullable choice for MCQs
+    selected_option_id = db.Column(db.Integer, db.ForeignKey('options.id'), nullable=True)
+    
+    # Response text for Subjective / Code questions
+    answer_text = db.Column(db.Text, nullable=True)
+    
+    # Auto-grading boolean (True/False for MCQ, None for Subjective/Code)
+    is_correct = db.Column(db.Boolean, nullable=True)
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships

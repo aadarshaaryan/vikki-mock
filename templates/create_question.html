@@ -1,75 +1,209 @@
 {% extends 'base.html' %}
 
-{% block title %}Upload MCQ - QuizHub{% endblock %}
+{% block title %}Create Question - QuizHub{% endblock %}
 
 {% block content %}
+<style>
+    .form-container {
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+
+    .form-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        padding: 28px;
+        margin-bottom: 30px;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .mcq-option-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .mcq-option-row .form-check-input {
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    /* Code Snippet Guidance Notice */
+    .type-info-box {
+        font-size: 0.875rem;
+        border-left: 4px solid #3b82f6;
+        background-color: #eff6ff;
+        padding: 10px 14px;
+        border-radius: 0 6px 6px 0;
+        margin-top: 8px;
+    }
+
+    @media (max-width: 576px) {
+        .form-card {
+            padding: 18px;
+        }
+
+        .mcq-option-row {
+            gap: 8px;
+        }
+    }
+</style>
+
 <div class="row justify-content-center">
-    <div class="col-md-7">
-        <div class="card p-4">
-            <h3 class="mb-3">➕ Post a New MCQ</h3>
+    <div class="col-12 col-md-10 col-lg-8 form-container">
+        
+        <div class="form-card">
+            <h3 class="fw-bold mb-4">📝 Post New Question</h3>
+
             <form method="POST">
+                
+                <!-- Section 1: Uploader Info -->
+                <div class="form-section-title">1. Basic Info</div>
+                
                 <div class="mb-3">
                     <label class="form-label fw-bold">Your Name</label>
-                    <input type="text" name="uploader_name" class="form-control" placeholder="e.g. Alex Smith" required>
+                    <input type="text" name="uploader_name" class="form-control" placeholder="e.g. Prof. Sharma" required>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-sm-6">
                         <label class="form-label fw-bold">Subject</label>
-                        <input type="text" name="subject" class="form-control" placeholder="e.g. Physics" required>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Python Programming" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Unit / Chapter</label>
-                        <input type="text" name="unit" class="form-control" placeholder="e.g. Thermodynamics" required>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label fw-bold">Unit / Topic</label>
+                        <input type="text" name="unit" class="form-control" placeholder="e.g. Unit 3 - Data Structures" required>
+                    </div>
+                </div>
+
+                <!-- Section 2: Question Type & Content -->
+                <div class="form-section-title mt-4">2. Question Content</div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Question Type</label>
+                    <select name="question_type" id="questionTypeSelect" class="form-select fw-semibold" onchange="toggleQuestionType()">
+                        <option value="mcq" selected>Multiple Choice (MCQ)</option>
+                        <option value="subjective">Subjective (Text Response)</option>
+                        <option value="code">Code Submission (Formatted <code> Output)</option>
+                    </select>
+                    
+                    <div id="typeHint" class="type-info-box">
+                        Students will pick 1 correct answer from 4 options.
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Question</label>
-                    <textarea name="question_text" class="form-control" rows="3"
-                        placeholder="Type your MCQ question here..." required></textarea>
+                    <label class="form-label fw-bold">Question Text</label>
+                    <textarea name="question_text" class="form-control" rows="4" placeholder="Enter your question statement here..." required></textarea>
                 </div>
 
-                <hr>
+                <!-- Section 3: MCQ Options Panel (Hidden for Subjective / Code) -->
+                <div id="mcqOptionsSection" class="mt-4">
+                    <div class="form-section-title">3. Options & Correct Choice</div>
+                    <p class="text-muted small mb-2">Fill in the 4 options and select the radio button next to the correct answer:</p>
 
-                <label class="form-label fw-bold">Options (Select radio button for Correct Choice)</label>
-                {% for i in range(4) %}
-                <div class="input-group mb-2">
-                    <div class="input-group-text">
-                        <input class="form-check-input mt-0" type="radio" name="correct_option" value="{{ i }}"
-                            {{ 'checked' if i==0 }} required>
+                    <div class="mcq-option-row">
+                        <input class="form-check-input" type="radio" name="correct_option" value="0" checked required>
+                        <input type="text" name="options" class="form-control" placeholder="Option 1" required>
                     </div>
-                    <input type="text" name="options" class="form-control" placeholder="Option {{ i + 1 }}" required>
-                </div>
-                {% endfor %}
 
-                <hr>
-
-                <h5 class="fw-bold mb-3">📅 Visibility Schedule</h5>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Visible From</label>
-                        <input type="datetime-local" name="visible_at" class="form-control" id="visible_at" required>
+                    <div class="mcq-option-row">
+                        <input class="form-check-input" type="radio" name="correct_option" value="1">
+                        <input type="text" name="options" class="form-control" placeholder="Option 2" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Hide At</label>
-                        <input type="datetime-local" name="hide_at" class="form-control" id="hide_at" required>
+
+                    <div class="mcq-option-row">
+                        <input class="form-check-input" type="radio" name="correct_option" value="2">
+                        <input type="text" name="options" class="form-control" placeholder="Option 3" required>
+                    </div>
+
+                    <div class="mcq-option-row mb-3">
+                        <input class="form-check-input" type="radio" name="correct_option" value="3">
+                        <input type="text" name="options" class="form-control" placeholder="Option 4" required>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 mt-2">Publish Question</button>
+                <!-- Section 4: Visibility Schedule -->
+                <div class="form-section-title mt-4">4. Schedule Active Window</div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label fw-bold">Visible From</label>
+                        <input type="datetime-local" name="visible_at" class="form-control" required>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label fw-bold">Hide At</label>
+                        <input type="datetime-local" name="hide_at" class="form-control" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Publish & Schedule Question 🚀</button>
             </form>
         </div>
+
     </div>
 </div>
 
 <script>
-    // Pre-fill "Visible From" with local current time and "Hide At" with 1 hour later
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('visible_at').value = now.toISOString().slice(0, 16);
+    function toggleQuestionType() {
+        const typeSelect = document.getElementById('questionTypeSelect').value;
+        const mcqSection = document.getElementById('mcqOptionsSection');
+        const typeHint = document.getElementById('typeHint');
+        const optionInputs = mcqSection.querySelectorAll('input[name="options"]');
 
-    const later = new Date(now.getTime() + 60 * 60 * 1000);
-    document.getElementById('hide_at').value = later.toISOString().slice(0, 16);
+        if (typeSelect === 'mcq') {
+            mcqSection.style.display = 'block';
+            typeHint.innerHTML = "Students will pick 1 correct answer from 4 options.";
+            
+            // Require options input fields when MCQ is active
+            optionInputs.forEach(input => input.setAttribute('required', 'required'));
+        } else if (typeSelect === 'code') {
+            mcqSection.style.display = 'none';
+            typeHint.innerHTML = "Students will receive a dark monospaced code editor to write and submit code snippets.";
+            
+            // Remove requirement so form submits smoothly without options
+            optionInputs.forEach(input => input.removeAttribute('required'));
+        } else {
+            mcqSection.style.display = 'none';
+            typeHint.innerHTML = "Students will receive a text area to write open-ended subjective answers.";
+            
+            // Remove requirement so form submits smoothly without options
+            optionInputs.forEach(input => input.removeAttribute('required'));
+        }
+    }
+
+    // Set default datetime values on page load (Now -> +7 Days)
+    window.addEventListener('DOMContentLoaded', () => {
+        const now = new Date();
+        const nextWeek = new Date();
+        nextWeek.setDate(now.getDate() + 7);
+
+        // Format to YYYY-MM-THH:mm
+        const formatLocal = (d) => {
+            const pad = (n) => n < 10 ? '0' + n : n;
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        };
+
+        const visibleInput = document.querySelector('input[name="visible_at"]');
+        const hideInput = document.querySelector('input[name="hide_at"]');
+
+        if (visibleInput && !visibleInput.value) visibleInput.value = formatLocal(now);
+        if (hideInput && !hideInput.value) hideInput.value = formatLocal(nextWeek);
+    });
 </script>
 {% endblock %}

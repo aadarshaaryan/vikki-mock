@@ -4,7 +4,6 @@
 
 {% block content %}
 <style>
-    /* Global & Wrapper Adjustments */
     .question-container {
         width: 100%;
         max-width: 800px;
@@ -23,7 +22,6 @@
         overflow-wrap: break-word;
     }
 
-    /* Question Header Bar */
     .card-meta-bar {
         display: flex;
         justify-content: space-between;
@@ -39,9 +37,11 @@
         flex-wrap: wrap;
     }
 
-    .meta-uploader {
-        font-size: 0.9rem;
-        color: #6b7280;
+    .badge-type {
+        background-color: #3b82f6;
+        color: #fff;
+        text-transform: uppercase;
+        font-size: 0.75rem;
     }
 
     .question-title {
@@ -52,7 +52,20 @@
         line-height: 1.5;
     }
 
-    /* Form Option Label Adjustments */
+    /* Styled Code Editor Input */
+    .code-input {
+        font-family: 'Courier New', Courier, monospace;
+        background-color: #1e293b;
+        color: #f8fafc;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .code-input::placeholder {
+        color: #94a3b8;
+    }
+
+    /* Form Option Label */
     .option-label {
         display: flex;
         align-items: center;
@@ -60,22 +73,29 @@
         border-radius: 8px;
         cursor: pointer;
         transition: background-color 0.2s ease;
-        word-break: break-word;
     }
 
-    .option-label:hover {
-        background-color: #f9fafb;
+    /* Displayed Code Snippets in Submissions */
+    .code-block-display {
+        background-color: #0f172a;
+        color: #38bdf8;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-top: 8px;
+        overflow-x: auto;
     }
 
-    .option-radio {
-        flex-shrink: 0;
+    .code-block-display code {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
     }
 
-    /* Response List Item Styling */
+    /* Response List Item */
     .response-item {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         gap: 16px;
         padding: 16px;
         border-radius: 8px;
@@ -84,14 +104,8 @@
     .response-content {
         flex: 1;
         min-width: 0;
-        /* Prevents text overflow */
     }
 
-    .response-badge {
-        flex-shrink: 0;
-    }
-
-    /* Mobile Responsiveness Rules (< 576px) */
     @media (max-width: 576px) {
         .responsive-card {
             padding: 16px;
@@ -103,68 +117,66 @@
             gap: 8px;
         }
 
-        .meta-uploader {
-            font-size: 0.825rem;
-        }
-
-        .question-title {
-            font-size: 1.1rem;
-        }
-
         .response-item {
             flex-direction: column;
             align-items: flex-start;
-            gap: 10px;
-        }
-
-        .response-badge {
-            align-self: flex-start;
-        }
-
-        .btn-submit-mobile {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
         }
     }
 </style>
 
 <div class="row justify-content-center">
     <div class="col-12 col-md-10 col-lg-8 question-container">
-
+        
         <!-- Question Box -->
         <div class="responsive-card">
             <div class="card-meta-bar">
                 <div class="meta-badges">
                     <span class="badge badge-subject text-white">{{ question.subject }}</span>
                     <span class="badge badge-unit text-white">Unit: {{ question.unit }}</span>
+                    <span class="badge badge-type">{{ question.question_type }}</span>
                 </div>
-                <div class="meta-uploader">
+                <div class="text-muted small">
                     Uploaded by: <strong>{{ question.uploader_name }}</strong>
                 </div>
             </div>
 
             <h4 class="question-title">{{ question.question_text }}</h4>
 
-            <!-- Answer Submission Form -->
+            <!-- Dynamic Answer Form -->
             <form method="POST" class="mt-3">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Your Name</label>
                     <input type="text" name="user_name" class="form-control" placeholder="Enter your name" required>
                 </div>
 
-                <label class="form-label fw-bold">Select Answer</label>
-                <div class="list-group mb-3">
-                    {% for opt in question.options %}
-                    <label class="list-group-item option-label">
-                        <input class="form-check-input option-radio me-3" type="radio" name="selected_option"
-                            value="{{ opt.id }}" required>
-                        <span>{{ opt.option_text }}</span>
-                    </label>
-                    {% endfor %}
-                </div>
+                <!-- 1. MCQ Answer Input -->
+                {% if question.question_type == 'mcq' %}
+                    <label class="form-label fw-bold">Select Answer</label>
+                    <div class="list-group mb-3">
+                        {% for opt in question.options %}
+                        <label class="list-group-item option-label">
+                            <input class="form-check-input me-3" type="radio" name="selected_option" value="{{ opt.id }}" required>
+                            <span>{{ opt.option_text }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
 
-                <button type="submit" class="btn btn-success btn-submit-mobile w-100 fw-bold">Submit Answer</button>
+                <!-- 2. Code Answer Input -->
+                {% elif question.question_type == 'code' %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Write Your Code</label>
+                        <textarea name="answer_text" class="form-control code-input" rows="6" placeholder="// Write your solution code here..." required></textarea>
+                    </div>
+
+                <!-- 3. Subjective Answer Input -->
+                {% else %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Your Answer</label>
+                        <textarea name="answer_text" class="form-control" rows="4" placeholder="Type your detailed response here..." required></textarea>
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-success w-100 fw-bold">Submit Response</button>
             </form>
         </div>
 
@@ -176,19 +188,40 @@
                 {% for ans in question.answers|reverse %}
                 <div class="list-group-item response-item">
                     <div class="response-content">
-                        <strong>{{ ans.user_name }}</strong> selected:
-                        <span class="text-secondary fw-semibold">"{{ ans.selected_option.option_text }}"</span>
-                        <div class="text-muted small mt-1">
+                        <strong>{{ ans.user_name }}</strong> submitted:
+                        
+                        <!-- Output for MCQ -->
+                        {% if question.question_type == 'mcq' %}
+                            <span class="text-secondary fw-semibold">"{{ ans.selected_option.option_text }}"</span>
+                        
+                        <!-- Output for Code (Wrapped in <code>) -->
+                        {% elif question.question_type == 'code' %}
+                            <div class="code-block-display">
+                                <pre><code>{{ ans.answer_text }}</code></pre>
+                            </div>
+
+                        <!-- Output for Subjective -->
+                        {% else %}
+                            <div class="p-2 bg-light rounded mt-2 border">
+                                {{ ans.answer_text }}
+                            </div>
+                        {% endif %}
+
+                        <div class="text-muted small mt-2">
                             {{ ans.submitted_at.strftime('%b %d, %H:%M') }}
                         </div>
                     </div>
-                    <div class="response-badge">
+
+                    <!-- Grading Badge (For MCQ) -->
+                    {% if question.question_type == 'mcq' %}
+                    <div>
                         {% if ans.is_correct %}
                         <span class="badge bg-success p-2">✅ Correct</span>
                         {% else %}
                         <span class="badge bg-danger p-2">❌ Incorrect</span>
                         {% endif %}
                     </div>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="text-center text-muted py-3">
